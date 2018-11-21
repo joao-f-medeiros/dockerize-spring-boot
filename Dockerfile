@@ -1,8 +1,17 @@
-FROM centos
+FROM openjdk:8-jdk-alpine
 
-RUN yum install -y java
+COPY . /tmp
 
-VOLUME /tmp
-ADD /target/dockerize-spring-boot-0.0.1-SNAPSHOT.jar dockerize-spring-boot.jar
-RUN sh -c 'touch /dockerize-spring-boot.jar'
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/dockerize-spring-boot.jar"]
+RUN cd /tmp && ./mvnw install -DskipTests
+
+RUN mkdir -p /app
+
+RUN cp /tmp/target/*.jar /app/dockerize-spring-boot.jar
+
+RUN rm -rf /tmp/*
+
+WORKDIR /app
+
+RUN sh -c 'touch dockerize-spring-boot.jar'
+
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","dockerize-spring-boot.jar"]
